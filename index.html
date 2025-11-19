@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medi-Sync Complete Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Neutral "Sage & Slate" Palette */
+            --bg-gradient: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            
+            /* Status Colors */
+            --color-success: #10b981; 
+            --color-alert: #ef4444;
+            --color-warn: #f59e0b;
+            --color-brand: #374151; 
+            --color-action: #0d9488; /* Teal */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+        .user-badge { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .avatar {
+            width: 35px; height: 35px;
+            background: var(--color-action); color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+        }
+
+        /* --- LAYOUT --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 20px;
+            height: 85vh;
+        }
+
+        /* --- GLASS PANELS --- */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        .panel-section { display: flex; flex-direction: column; gap: 10px; }
+
+        h2, h3 { font-weight: 600; color: var(--color-brand); display: flex; align-items: center; gap: 8px; margin: 0;}
+        h3 { font-size: 1.1rem; }
+
+        /* --- COMPONENT: VITALS & MEDS (Left Col) --- */
+        .vitals-box {
+            background: rgba(255,255,255,0.5); padding: 10px; border-radius: 12px;
+            display: flex; justify-content: space-between; font-size: 0.85rem;
+        }
+        
+        .med-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.5); padding: 12px; border-radius: 12px;
+            transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent;
+        }
+        .med-item:hover { transform: translateY(-2px); background: rgba(255,255,255,0.8); }
+        .med-item.taken { border-left-color: var(--color-success); opacity: 0.6; background: #f0fdf4; }
+        .med-info small { display: block; color: var(--text-muted); font-size: 0.75rem; }
+        .check-circle {
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ccc;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .med-item.taken .check-circle { background: var(--color-success); border-color: var(--color-success); color: white; }
+
+        /* --- COMPONENT: MEALS (Left Col) --- */
+        .meal-card {
+            background: rgba(255,255,255,0.4); padding: 12px; border-radius: 12px;
+        }
+        .meal-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .action-chip {
+            padding: 5px 10px; border-radius: 15px; font-size: 0.75rem;
+            border: 1px solid var(--color-brand); background: transparent; cursor: pointer; transition: 0.2s;
+        }
+        .action-chip:hover { background: var(--color-brand); color: white; }
+        .action-chip.active { background: var(--color-action); color: white; border-color: var(--color-action); }
+
+        /* --- COMPONENT: INCIDENT BUTTONS (Center Col) --- */
+        .alert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-alert {
+            padding: 15px; border: none; border-radius: 12px;
+            font-weight: 600; cursor: pointer; text-align: left;
+            display: flex; align-items: center; gap: 10px;
+            transition: 0.2s; color: white; font-size: 0.9rem;
+        }
+        .btn-alert.seizure { background: var(--color-alert); box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+        .btn-alert.fall { background: var(--color-warn); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+        .btn-alert:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        /* --- COMPONENT: TAGS (Center Col) --- */
+        .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag-chip {
+            padding: 6px 12px; border-radius: 20px; font-size: 0.8rem;
+            border: 1px solid #ccc; background: rgba(255,255,255,0.5); cursor: pointer;
+        }
+        .tag-chip.selected { background: var(--color-brand); color: white; border-color: var(--color-brand); }
+
+        /* --- COMPONENT: FEED (Center Col) --- */
+        .feed-container { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .feed-item {
+            background: rgba(255,255,255,0.4); padding: 12px; margin-bottom: 10px;
+            border-radius: 12px; border-left: 4px solid transparent; animation: fadeIn 0.4s ease;
+        }
+        .feed-item.alert { border-left-color: var(--color-alert); background: rgba(255,230,230,0.6); }
+        .feed-item.warn { border-left-color: var(--color-warn); background: rgba(255,247,230,0.6); }
+        .feed-item.info { border-left-color: var(--color-action); }
+        .feed-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+        .feed-body { font-size: 0.9rem; line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- COMPONENT: DOMESTIC (Right Col) --- */
+        .checklist-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.9rem; }
+        .checklist-item input[type="checkbox"] { accent-color: var(--color-action); }
+        .shopping-input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px; background: rgba(255,255,255,0.8); }
+
+        /* --- COMPONENT: NOTEPAD (Right Col) --- */
+        .notepad-area {
+            width: 100%; height: 100px; background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 10px;
+            font-family: 'Inter', sans-serif; resize: none; margin-bottom: 5px;
+        }
+        .btn-save { width: 100%; padding: 8px; background: var(--color-action); color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-box {
+            background: #fff; width: 90%; max-width: 450px;
+            padding: 25px; border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+        .btn-submit { width: 100%; padding: 12px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-close { background: transparent; border: none; color: #999; float: right; cursor: pointer; font-size: 1.5rem; line-height: 1; }
+
+        @media (max-width: 1000px) { .grid-container { grid-template-columns: 1fr; height: auto; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="user-badge">
+            <div class="avatar">ME</div>
+            <span><strong>Primary Carer</strong> (You)</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-brand);">
+            <i class="fa-solid fa-user-clock"></i> Next Shift: <strong>Sarah (Sat 8am)</strong>
+        </div>
+    </header>
+
+    <div class="grid-container">
+        
+        <div class="glass-panel">
+            
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-heart-pulse" style="color: var(--color-action);"></i> Vitals</h3>
+                <div class="vitals-box">
+                    <span><strong>Status:</strong> Stable</span>
+                    <span><strong>HR:</strong> 72 bpm</span>
+                    <span><strong>O2:</strong> 98%</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-pills" style="color: var(--color-action);"></i> Medications</h3>
+                
+                <div class="med-item" onclick="toggleMed(this, 'Keppra 500mg')">
+                    <div class="med-info"><strong>Keppra 500mg</strong><small>08:00 AM • With Food</small></div>
+                    <div class="check-circle"><i class="fa-solid fa-check"></i></div>
+                </div>
+
+                <div class="med-item" onclick="toggleMed(this, 'Vitamins')">
+                    <div class="med-info"><strong>Daily Multi</strong><small>08:00 AM</small></div>
+                    <div class="check-circle"><i class="fa-solid fa-check"></i></div>
+                </div>
+
+                <div class="med-item" onclick="toggleMed(this, 'Clobazam')">
+                    <div class="med-info"><strong>Clobazam</strong><small>08:00 PM • Night Routine</small></div>
+                    <div class="check-circle"><i class="fa-solid fa-check"></i></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-utensils" style="color: var(--color-action);"></i> Meals</h3>
+                <div class="meal-card">
+                    <strong><i class="fa-solid fa-sun"></i> Lunch</strong>
+                    <div class="meal-actions">
+                        <button class="action-chip" onclick="toggleMeal(this, 'Lunch Prepared')">Prepared</button>
+                        <button class="action-chip" onclick="toggleMeal(this, 'Lunch Eaten')">Eaten</button>
+                    </div>
+                </div>
+                <div class="meal-card">
+                    <strong><i class="fa-solid fa-moon"></i> Dinner</strong>
+                    <div class="meal-actions">
+                        <button class="action-chip" onclick="toggleMeal(this, 'Dinner Prepared')">Prepared</button>
+                        <button class="action-chip" onclick="toggleMeal(this, 'Dinner Eaten')">Eaten</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="glass-panel">
+            
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--color-alert);"></i> Report Incident</h3>
+                <div class="alert-grid">
+                    <button class="btn-alert seizure" onclick="openModal('seizureModal')">
+                        <i class="fa-solid fa-bolt fa-lg"></i> Seizure
+                    </button>
+                    <button class="btn-alert fall" onclick="openModal('fallModal')">
+                        <i class="fa-solid fa-person-falling fa-lg"></i> Fall
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-face-smile" style="color: var(--color-brand);"></i> Current Status</h3>
+                <div class="tag-group">
+                    <span class="tag-chip" onclick="toggleTag(this)">😊 Happy</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">😌 Calm</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">😠 Agitated</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">😵‍💫 Confused</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">😴 Drowsy</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">🤕 Numbness/Tingles</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">🚽 Incontinence</span>
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:5px; margin-bottom:2px;">Context / Activity:</p>
+                <div class="tag-group">
+                    <span class="tag-chip" onclick="toggleTag(this)">📺 TV</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">🌳 Walk</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">🩺 Physio</span>
+                    <span class="tag-chip" onclick="toggleTag(this)">👨‍👩‍👧 Family Visit</span>
+                </div>
+                <button onclick="logWellness()" style="margin-top:8px; padding:8px; width:100%; border-radius:8px; border:1px solid #ccc; cursor:pointer; background: white;">Update Status Log</button>
+            </div>
+
+            <div class="panel-section" style="flex: 1; min-height: 200px;">
+                <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--color-brand);"></i> Real-Time Feed</h3>
+                <div class="feed-container" id="feed">
+                    <div class="feed-item info">
+                        <div class="feed-meta"><span>Sister Sarah</span> <span>10:30 AM</span></div>
+                        <div class="feed-body">Prepared Lunch. Ate about half. Seemed in good spirits.</div>
+                    </div>
+                    <div class="feed-item info">
+                        <div class="feed-meta"><span>System</span> <span>08:00 AM</span></div>
+                        <div class="feed-body"><i class="fa-solid fa-check" style="color:var(--color-success)"></i> Morning Meds (Keppra) taken.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="glass-panel">
+            
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-clipboard-list" style="color: var(--color-action);"></i> Handover Tasks</h3>
+                <div style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 12px;">
+                    <div class="checklist-item"><input type="checkbox"> <span>Washing in machine (needs hung)</span></div>
+                    <div class="checklist-item"><input type="checkbox"> <span>Grass needs cut</span></div>
+                    <div class="checklist-item"><input type="checkbox"> <span>Trim nails</span></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fa-solid fa-cart-shopping" style="color: var(--color-action);"></i> Shopping List</h3>
+                <div id="shoppingList">
+                    <div class="checklist-item"><input type="checkbox"> <span>Dish soap</span></div>
+                    <div class="checklist-item"><input type="checkbox"> <span>Toilet roll</span></div>
+                </div>
+                <input type="text" class="shopping-input" placeholder="+ Add item (Enter)" onkeypress="addShopping(event)">
+            </div>
+
+            <div class="panel-section" style="flex: 1;">
+                <h3><i class="fa-solid fa-user-doctor" style="color: var(--color-action);"></i> Appt. Notepad</h3>
+                <div id="notesContainer" style="max-height: 100px; overflow-y:auto; margin-bottom:10px;">
+                    <div style="background: rgba(255,255,255,0.4); padding: 8px; border-radius: 8px; margin-bottom: 5px; font-size: 0.8rem;">
+                        <strong>18/11 - Neurology:</strong> Review meds in 3 months.
+                    </div>
+                </div>
+                <div style="margin-top: auto;">
+                    <textarea id="noteInput" class="notepad-area" placeholder="Doctor said..."></textarea>
+                    <button class="btn-save" onclick="saveNote()">Post Note</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="seizureModal">
+        <div class="modal-box">
+            <button class="btn-close" onclick="closeModal('seizureModal')">&times;</button>
+            <h2 style="color: var(--color-alert); margin-bottom:20px;"><i class="fa-solid fa-bolt"></i> Report Seizure</h2>
+            
+            <div class="form-group">
+                <label>Type & Appearance</label>
+                <select id="szType" class="form-control">
+                    <option>Tonic-Clonic (Convulsive)</option>
+                    <option>Absence (Staring)</option>
+                    <option>Focal (Twitching)</option>
+                    <option>Unknown</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Duration</label>
+                <input type="range" id="szDuration" style="width:100%" min="0" max="10" value="1" oninput="document.getElementById('durVal').innerText = this.value + ' mins'">
+                <div style="text-align:right; font-weight:bold; color:var(--color-brand)" id="durVal">1 mins</div>
+            </div>
+
+            <div class="form-group">
+                <label>Details</label>
+                <div style="display:flex; gap:15px;">
+                    <label><input type="checkbox" id="szLOC"> Loss of Consc.</label>
+                    <label><input type="checkbox" id="szInj"> Injury Sustained</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Action / Meds Given</label>
+                <textarea id="szAction" class="form-control" placeholder="e.g. Recovery position, Buccal Midazolam..."></textarea>
+            </div>
+
+            <button class="btn-submit" style="background: var(--color-alert)" onclick="submitSeizure()">LOG URGENT REPORT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fallModal">
+        <div class="modal-box">
+            <button class="btn-close" onclick="closeModal('fallModal')">&times;</button>
+            <h2 style="color: var(--color-warn); margin-bottom:20px;"><i class="fa-solid fa-person-falling"></i> Report Fall</h2>
+            
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="fallLoc" class="form-control" placeholder="e.g. Bathroom, Garden stairs">
+            </div>
+
+            <div class="form-group">
+                <label>Circumstances</label>
+                <textarea id="fallCause" class="form-control" placeholder="e.g. Slipped on rug, legs gave way, dizziness..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Outcome</label>
+                <div style="display:flex; gap:15px;">
+                    <label><input type="checkbox" id="fallInj"> Injury Visible</label>
+                    <label><input type="checkbox" id="fall999"> Called 999/111</label>
+                </div>
+            </div>
+
+            <button class="btn-submit" style="background: var(--color-warn)" onclick="submitFall()">LOG INCIDENT</button>
+        </div>
+    </div>
+
+    <script>
+        // --- HELPERS ---
+        function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+        
+        function addToFeed(html, type = 'info') {
+            const feed = document.getElementById('feed');
+            const div = document.createElement('div');
+            div.className = `feed-item ${type}`;
+            div.innerHTML = `
+                <div class="feed-meta"><span>You (Just now)</span> <span>${getTime()}</span></div>
+                <div class="feed-body">${html}</div>
+            `;
+            feed.prepend(div);
+        }
+
+        // --- ROUTINE (Meds/Meals) ---
+        function toggleMed(el, name) {
+            el.classList.toggle('taken');
+            const isTaken = el.classList.contains('taken');
+            addToFeed(isTaken 
+                ? `<i class="fa-solid fa-check" style="color:var(--color-success)"></i> Marked <strong>${name}</strong> as taken.` 
+                : `Unmarked <strong>${name}</strong>.`
+            );
+        }
+
+        function toggleMeal(btn, action) {
+            btn.classList.toggle('active');
+            if(btn.classList.contains('active')) {
+                addToFeed(`Marked meal status: <strong>${action}</strong>.`);
+            }
+        }
+
+        // --- INCIDENTS (Modals) ---
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function submitSeizure() {
+            const type = document.getElementById('szType').value;
+            const dur = document.getElementById('szDuration').value;
+            const loc = document.getElementById('szLOC').checked ? "Yes" : "No";
+            const action = document.getElementById('szAction').value || "Monitored.";
+            
+            const html = `
+                <strong>SEIZURE REPORT</strong><br>
+                Type: ${type} | Duration: ${dur} mins<br>
+                LOC: ${loc} | <em>${action}</em>
+            `;
+            addToFeed(html, 'alert');
+            closeModal('seizureModal');
+        }
+
+        function submitFall() {
+            const loc = document.getElementById('fallLoc').value;
+            const cause = document.getElementById('fallCause').value;
+            const inj = document.getElementById('fallInj').checked ? "YES" : "No";
+            const html = `
+                <strong>FALL REPORTED</strong><br>
+                Loc: ${loc} | Cause: ${cause}<br>
+                <strong>Injury Visible: ${inj}</strong>
+            `;
+            addToFeed(html, 'warn');
+            closeModal('fallModal');
+        }
+
+        // --- TAGS & WELLNESS ---
+        function toggleTag(el) { el.classList.toggle('selected'); }
+
+        function logWellness() {
+            const chips = document.querySelectorAll('.tag-chip.selected');
+            if(chips.length === 0) return alert("Select tags first.");
+            let tags = [];
+            chips.forEach(c => tags.push(c.innerText));
+            addToFeed(`Updated Status: ${tags.join(', ')}`);
+            chips.forEach(c => c.classList.remove('selected'));
+        }
+
+        // --- SHOPPING & NOTES ---
+        function addShopping(e) {
+            if(e.key === 'Enter' && e.target.value) {
+                const list = document.getElementById('shoppingList');
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.innerHTML = `<input type="checkbox"> <span>${e.target.value}</span>`;
+                list.appendChild(div);
+                addToFeed(`Added <strong>${e.target.value}</strong> to shopping list.`);
+                e.target.value = '';
+            }
+        }
+
+        function saveNote() {
+            const input = document.getElementById('noteInput');
+            const text = input.value.trim();
+            if(text) {
+                const container = document.getElementById('notesContainer');
+                const div = document.createElement('div');
+                div.style = "background: rgba(255,255,255,0.4); padding: 8px; border-radius: 8px; margin-bottom: 5px; font-size: 0.8rem; border-left: 3px solid var(--color-action);";
+                const date = new Date().toLocaleDateString([], {day: '2-digit', month:'2-digit'});
+                div.innerHTML = `<strong>${date}:</strong> ${text}`;
+                container.prepend(div);
+                addToFeed("Posted a new appointment note.");
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
